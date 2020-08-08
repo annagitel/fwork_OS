@@ -1,18 +1,16 @@
 // Created by asandler on 7/27/20.
+// 1 2 can be changed, 0 3 5 must be zero, 4 ???
 #include <sched.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 # include <sys/syscall.h>
-// 1 2 can be changed, 0 3 5 must be zero, 4 ???
 #define _GNU_SOURCE
 #include <linux/kernel.h>
 #include <time.h>
 #include <linux/types.h>
 #include <linux/sched.h>
 #include <sys/types.h>
-
-#define SCHED_DEADLINE  6
 
 /* __NR_sched_setattr number */
 #ifndef __NR_sched_setattr
@@ -70,45 +68,53 @@ int sched_setattr(pid_t pid,const struct sched_attr *attr,unsigned int flags){
     return syscall(__NR_sched_setattr, pid, attr, flags);
 }
 
-int sched_getattr(pid_t pid,struct sched_attr *attr, unsigned int size,unsigned int flags){
-    return syscall(__NR_sched_getattr, pid, attr, size, flags);
-}
-
-int main(int argc, char** argv){
+int main(int argc, char** argv) {
 	int policy = atoi(argv[1]);
 	int priority = atoi(argv[2]);
 	printf("policy %d priority %d \n", policy, priority);
-
 	char command[128];
-	snprintf(command, sizeof(command), "chrt -p %d",getpid());
+	snprintf(command, sizeof(command), "sudo chrt -p %d\n", getpid());
+
+	printf("before:\n");
+	system(command);
 
 	struct sched_param param;
 	struct sched_attr attr;
 
-	if (policy == 1 || policy == 2)
+	if (policy == 1 || policy == 2) {
 		param.sched_priority = priority;
-	else if( policy == 6) {
-		printf("in 6\n");
-		attr.size = sizeof(attr);
-		attr.sched_policy = 6;
-		attr.sched_runtime = 10 * 100 * 1000;
-		attr.sched_period = 2 * 100 * 100 * 1000;
-		attr.sched_deadline = 11 * 1000 * 1000;
-		attr.sched_flags = 0;
-		sched_setattr(getpid(), &attr, attr.sched_flags);
-		printf("6 is now: \n");
+		sched_setscheduler(0, policy, &param);
+		printf("after:\n");
 		system(command);
-		printf("%s\n", command);
-
 	}
-	else
-		param.sched_priority = 0;
+	else if (policy == 6) {
+		attr.size = sizeof(attr);
+		attr.sched_nice = 0;
+		attr.sched_priority = 0;
+		attr.sched_policy = 6;
+		attr.sched_runtime = 10 * 1000 * 1000;
+		attr.sched_period = 30 * 1000 * 1000;
+		attr.sched_deadline = 30 * 1000 * 1000;
+		attr.sched_flags = 0;
 
-	printf("%d\n", getpid());
-	printf("before:\n");
-	system(command);
-	sched_setscheduler(0,policy,&param);
-	printf("after:\n");
-	system(command);
+		pid_t father = getpid();
+		pid_t f = fork();
+
+		if (f) {
+			int ret = sched_setattr(father, &attr, attr.sched_flags);
+		} else {
+			char command[128];
+			snprintf(command, sizeof(command), "sudo chrt -p %d\n", father);
+			printf("after else:\n");
+			system(command);
+		}
+	}
+	else if (policy == 0 || policy == 3 || policy == 5) {
+		param.sched_priority = 0;
+		sched_setscheduler(0, policy, &param);
+		printf("after:\n");
+		system(command);
+	}
+
 	return(0);
 }
