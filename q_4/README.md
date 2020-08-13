@@ -1,4 +1,4 @@
-1. open terminal and run `./b.bash` , a folder named "dir" will be created
+1. open terminal and run `./b.sh` , a folder named "dir" will be created
 2. run `make` , a exe file named "dir_traversal" will be created 
 3. run `./dir_traversal dir`  
 

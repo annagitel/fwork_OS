@@ -98,14 +98,15 @@ int main(int argc, char** argv) {
 		attr.sched_flags = 0;
 
 		pid_t father = getpid();
+		printf("father is %d\n", father);
 		pid_t f = fork();
-
+		int ret = sched_setattr(father, &attr, attr.sched_flags);
 		if (f) {
 			int ret = sched_setattr(father, &attr, attr.sched_flags);
 		} else {
 			char command[128];
-			snprintf(command, sizeof(command), "sudo chrt -p %d\n", father);
-			printf("after else:\n");
+			snprintf(command, sizeof(command), "chrt -p %d\n", father);
+			printf("after:\n");
 			system(command);
 		}
 	}
@@ -115,6 +116,6 @@ int main(int argc, char** argv) {
 		printf("after:\n");
 		system(command);
 	}
-
+	sleep(5);
 	return(0);
 }

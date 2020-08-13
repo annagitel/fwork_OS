@@ -24,6 +24,4 @@ int main(){
 		signal(SIGINT, int_handler);
 		signal(SIGUSR1, usr_handler);
 	}
-
-	//signal(SIGUSR1, usr_handler);
 }

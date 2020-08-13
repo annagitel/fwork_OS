@@ -25,5 +25,5 @@ int main(int argc, char *argv[]){
    }
    exit(EXIT_SUCCESS);
 }
-//https://pubs.opengroup.org/onlinepubs/9699919799/functions/nftw.html
+
 

@@ -1,3 +1,4 @@
+#!/bin/bash
 mkdir dir
 touch dir/a dir/b
 ln -s a dir/sl
